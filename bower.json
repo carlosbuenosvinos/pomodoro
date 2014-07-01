@@ -1,0 +1,16 @@
+{
+  "name": "angular-pomodoro",
+  "version": "0.0.0",
+  "authors": [
+    "Carlos Buenosvinos <hi@carlos.io>"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
