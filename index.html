@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="bower_components/angular/angular.min.js"></script>
+</head>
+<body ng-app="pomodoroApp">
+<div ng-controller="pomodoroController as p">
+    <ul ng-repeat="pomodoro in p.pomodoros">
+        <li>{{pomodoro.done}}</li>
+    </ul>
+    <button ng-click="p.add()">Add</button>
+</div>
+<script>
+    var app = angular.module('pomodoroApp', []);
+    app.controller('pomodoroController', function () {
+        var that = this;
+        this.amor = 'Vanessa';
+        this.pomodoros = [
+            {done: 100},
+            {done: 100},
+            {done: 100},
+        ];
+
+        this.add = function () {
+            that.pomodoros.push({done: 50});
+        };
+    });
+</script>
+</body>
+</html>
