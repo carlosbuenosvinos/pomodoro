@@ -1,31 +1,128 @@
 <!DOCTYPE html>
-<html>
+<html ng-app="pomodoroApp">
 <head lang="en">
     <meta charset="UTF-8">
-    <title></title>
+    <title>Try Pomodoro Technique Online</title>
     <script src="bower_components/angular/angular.min.js"></script>
+    <script src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css" />
+
 </head>
-<body ng-app="pomodoroApp">
-<div ng-controller="pomodoroController as p">
-    <ul ng-repeat="pomodoro in p.pomodoros">
-        <li>{{pomodoro.done}}</li>
-    </ul>
-    <button ng-click="p.add()">Add</button>
+<body>
+<div class="container">
+    <div ng-controller="pomodoroCtrl">
+        <div ng-class="{'alert-info':inShortBreak}" role="alert" class="alert alert-danger">{{time | date:'mm:ss'}}</div>
+
+        <div class="progress">
+            <div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="{{currentPomodoro.done}}" aria-valuemin="0" aria-valuemax="100" style="width: {{currentPomodoro.done}}%">
+                <span class="sr-only">{{currentPomodoro.done}}% Complete</span>
+            </div>
+        </div>
+
+        <ul ng-repeat="pomodoro in pomodoros">
+            <li>{{pomodoro.done}}</li>
+        </ul>
+
+        <input type="checkbox" ng-model="playSound" /> Play sound
+
+        <button ng-hide="started" ng-click="start()">Start</button>
+        <button ng-show="started && running" ng-click="pause()">Pause</button>
+
+        <button ng-show="started && !running" ng-click="resume()">Resume</button>
+        <button ng-show="started && !running" ng-click="stop()">Stop</button>
+    </div>
 </div>
+
 <script>
     var app = angular.module('pomodoroApp', []);
-    app.controller('pomodoroController', function () {
-        var that = this;
-        this.amor = 'Vanessa';
-        this.pomodoros = [
-            {done: 100},
-            {done: 100},
-            {done: 100},
-        ];
+    app.controller('pomodoroCtrl', function ($scope, $timeout) {
+        $scope.started = false;
+        $scope.running = false;
+        $scope.inShortBreak = false;
+        $scope.inLongBreak = false;
+        $scope.playSound = true;
+        $scope.pomodoros = [];
+        $scope.currentPomodoro = {done: 0};
 
-        this.add = function () {
-            that.pomodoros.push({done: 50});
+        var config = {
+            pomodoroDuration: 10,
+            shortBreakDuration: 5,
+            longBreakDuration: 15,
+            longBreakDelay: 4,
+            tickingSound: true,
+            alarmSound: null,
+            targetPomodorosPerDay: 11,
+            autoReset: true
         };
+
+        var that = this;
+
+        this.resetTimer = function() {
+            $scope.time = config.pomodoroDuration;
+            if ($scope.inShortBreak) {
+                $scope.time = config.shortBreakDuration;
+            } else if($scope.inLongBreak) {
+                $scope.time = config.longBreakDuration;
+            }
+
+            $scope.time *= 1000;
+            $scope.totalTime = $scope.time;
+        };
+
+        timeTick = function() {
+            if ($scope.running) {
+                $scope.time -= 1000;
+                $scope.currentPomodoro.done = Math.round((($scope.totalTime - $scope.time) / $scope.totalTime) * 100);
+                if ($scope.time <= 0) {
+                    if (!$scope.inShortBreak && !$scope.inLongBreak) {
+                        add();
+
+                        if ($scope.pomodoros.length % config.longBreakDelay == 0) {
+                            $scope.inLongBreak = true;
+                        } else {
+                            $scope.inShortBreak = true;
+                        }
+                    } else {
+                        $scope.inLongBreak = false;
+                        $scope.inShortBreak = false;
+                    }
+
+                    that.resetTimer();
+                }
+            }
+
+            $timeout(timeTick, 1000);
+        };
+
+        $scope.start = function() {
+            $scope.started = true;
+            $scope.running = true;
+        };
+
+        $scope.pause = function() {
+            $scope.started = true;
+            $scope.running = false;
+        };
+
+        $scope.resume = function() {
+            $scope.started = true;
+            $scope.running = true;
+        };
+
+        $scope.stop = function() {
+            $scope.started = false;
+            $scope.running = false;
+            that.resetTimer();
+        };
+
+        var add = function() {
+            $scope.pomodoros.push($scope.currentPomodoro);
+            $scope.currentPomodoro = {done: 0};
+        };
+
+        this.resetTimer();
+        timeTick();
     });
 </script>
 </body>

@@ -1,0 +1,6 @@
+<div ng-controller="pomodoroController as p">
+    <ul ng-repeat="pomodoro in p.pomodoros">
+        <li>{{pomodoro.done}}</li>
+    </ul>
+    <button ng-click="p.add()">Add</button>
+</div>
